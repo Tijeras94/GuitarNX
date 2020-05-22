@@ -1,0 +1,187 @@
+
+OggVorbis_File vf;
+int eof = 0;
+int current_section;
+char** oggComments;
+vorbis_info* vi;
+//int errno;			// __errno;
+static int isPlaying;		// Set to true when a mod is being played
+static int myChannel;
+int fd = 0;
+
+static int eos;
+
+int i;
+bool reset = true;
+bool loop = false;
+
+bool seekoff = false;
+long seeksec = 0;
+float volume = 1.0f;
+
+void seek(long sec)
+{
+	seeksec = sec;
+	seekoff = !seekoff;
+}
+
+void setVolume(float vol){
+	volume = vol /100.0f;
+}
+
+static void OGGCallback(Uint8* _buf2, unsigned int numSamples)
+{
+	if (reset) {
+		if (ov_pcm_seek_page(&vf, 0) != 0) {
+			//printf("Could not seek to start of file\n");
+			OGG_End();
+		}
+		reset = false;
+	}
+	if (isPlaying) {
+
+		Uint8* smp = (Uint8*)malloc(sizeof(Uint8) * numSamples);
+
+		if (ov_read_block(&vf, (char*)smp, numSamples) == 0) {
+			eos = 1;
+			if (ov_pcm_seek_page(&vf, 0) != 0) {
+				//printf("Could not seek to start of file\n");
+				OGG_End();
+			}
+			isPlaying = loop;
+			return;
+		}
+
+		mix_audio((char*)_buf2, (char*)smp, numSamples, volume);
+		delete smp;//free temp buffer
+
+
+		if (seekoff) {
+
+			long sec = abs(seeksec) * 1000;
+			double length = ov_time_total(&vf, -1);
+			double ctime = ov_time_tell(&vf);
+
+
+			//check if positive value, then must seek foward else backwards
+			if (seeksec > 0) {
+				if ((length - ctime) > sec)
+					ov_time_seek(&vf, ov_time_tell(&vf) + sec);
+				else
+					ov_time_seek(&vf, 0);
+			}
+			else {
+				if ((ctime) > sec)
+					ov_time_seek(&vf, ov_time_tell(&vf) - sec);
+				else
+					ov_time_seek(&vf, 0);
+			}
+
+
+			seekoff = false;
+		}
+	}
+}
+
+void OGG_Init(int channel)
+{
+	i = 0;
+	myChannel = channel;
+	isPlaying = false;
+	audioSetChannelCallback(myChannel, OGGCallback, 0);
+}
+
+
+bool OGG_Load(int channel, const char* dir, const char* file, bool _loop)
+{
+	char filename[200];
+	snprintf(filename, sizeof(filename), "%s%s", dir, file);
+
+	eos = 0;
+	isPlaying = false;
+	loop = _loop;
+
+	// &vf
+	if (open_ogg_file(filename, &vf) != 0) {
+		printf("uanble to openfile");
+		return false;
+	}
+
+	printf("Loading OGG =>\n");
+	oggComments = ov_comment(&vf, -1)->user_comments;
+	vi = ov_info(&vf, -1);
+	printf("%d channel, %lu kb/s %s OGG Vorbis audio stream at %ldHz\n", vi->channels, vi->bitrate_nominal / 1000,
+		vi->bitrate_upper == vi->bitrate_nominal ? "CBR" : "VBR", vi->rate);
+	printf("Encoded by: %s\n", ov_comment(&vf, -1)->vendor);
+
+	OGG_Init(channel); 
+	 
+	return true;
+}
+
+
+
+// This function initialises for playing, and starts
+bool OGG_IsPlaying()
+{
+	return isPlaying;
+}
+
+// This function initialises for playing, and starts
+bool OGG_Play()
+{
+	// See if I'm already playing
+	if (isPlaying)
+		return false;
+
+	isPlaying = true;
+	return true;
+}
+
+void OGG_Stop()
+{
+	reset = true;
+	//stop playing
+	isPlaying = false;
+}
+
+void OGG_Pause()
+{
+	isPlaying = !isPlaying;
+}
+
+void OGG_FreeTune()
+{
+	ov_clear(&vf);
+	//if (fd)
+	//	sceIoClose(fd);
+}
+
+void OGG_End()
+{
+	OGG_Stop();
+	audioSetChannelCallback(myChannel, 0, 0);
+	OGG_FreeTune();
+}
+
+unsigned int OGG_GetTime()
+{
+	//extern ogg_int64_t ov_time_tell(OggVorbis_File *vf);
+	unsigned int time = (unsigned int)ov_time_tell(&vf);
+	return time;
+}
+
+unsigned int OGG_GetTotalTime()
+{
+	//extern ogg_int64_t ov_time_tell(OggVorbis_File *vf);
+	unsigned int time = (unsigned int)ov_time_total(&vf, -1);
+	return time;
+}
+
+
+bool OGG_EndOfStream()
+{
+	if (eos == 1)
+		return 1;
+	return 0;
+}
