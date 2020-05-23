@@ -79,8 +79,11 @@ int main(int argc, char* argv[])
 	};
 
 	auto bgnraw = Loader::loadToVAO(Bgvertices, sizeof(Bgvertices), textureCoords, sizeof(textureCoords), indices, sizeof(indices));
+	auto logoraw = Loader::loadToVAO(Bgvertices, sizeof(Bgvertices), textureCoords, sizeof(textureCoords), indices, sizeof(indices));
 	auto bgImage = TexturedModel(bgnraw, Loader::loadTexture(skin, "fond.png"));
+	auto logoImage = TexturedModel(logoraw, Loader::loadTexture(skin, "logo.png"));
 	bgImage.getModel().scale(glm::vec3(SCREEN_WIDTH, SCREEN_HEIGHT, 1));
+	logoImage.getModel().scale(glm::vec3(250,100, 1));
 
 	PCamera cam;
 	cam.translateZ(-1.7f);
@@ -142,6 +145,10 @@ int main(int argc, char* argv[])
 			if (Pad::start()) {
 				state = mainMenu;
 			} 
+			
+			logoImage.getModel().translate(glm::vec3(2,2, 0));
+			_shader.setMat4("pmv", ortview * logoImage.getModel().getTransform());
+			renderer.render(logoImage);
 		}
 		else if (state == mainMenu) {
 
