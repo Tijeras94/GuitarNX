@@ -163,6 +163,7 @@ enum PLAYER_STATES {
 	inPause,
 	inDebug,
 	score,
+	inChangeDificulty,
 	finished
 };
 
@@ -531,6 +532,7 @@ public:
 		//printf("A2\n");
 		audio2::OGG_Load(1, path, "guitar.ogg");
 		
+		// needs some sort of cheking if files exits, comment for now
 		audio3::OGG_Load(2, path, "vocals.ogg");
 		audio4::OGG_Load(3, path, "drums.ogg");
 		
@@ -646,7 +648,7 @@ public:
 		timeNow = timer.Ticks();//clock();
 		oggTime = timer.Ticks();//oggB::OGG_GetTime();
 
-		if (audio1::OGG_EndOfStream() || (Pad::oneHit(11) || Pad::oneHit(SDLK_0))) {
+		if (audio1::OGG_EndOfStream()) {
 			timer.Stop();
 			//if (songPresent)audio1::OGG_Stop();
 			//if (rhythmPresent)audio2::OGG_Stop();
@@ -800,7 +802,7 @@ public:
 			ShowScore();
 		}
 		else if (state == inPause) {
-			if (Pad::one_start()) {
+			if (Pad::one_start() || Pad::one_cross()) {
 				//if (songPresent)audio1::OGG_Pause();
 				//if (rhythmPresent)audio3::OGG_Pause();
 				//audio2::OGG_Pause();
@@ -814,12 +816,12 @@ public:
 				}
 			}
 			if (Pad::scroll_down()) {
-				if (pauseSelection < 2) {
+				if (pauseSelection < 3) {
 					motion += 18;
 					pauseSelection++;
 				}
 			}
-			if (Pad::one_cross()) {
+			if (Pad::one_circle()) {
 				if (pauseSelection == 0) {
 					//if (songPresent)audio1::OGG_Pause();
 					//if (rhythmPresent)audio3::OGG_Pause();
@@ -831,6 +833,9 @@ public:
 					reset();
 				}
 				else if (pauseSelection == 2) {
+					state = inChangeDificulty;
+				}
+				else if (pauseSelection == 3) {
 					stop();
 				}
 
@@ -841,17 +846,28 @@ public:
 			renderScreen(PV);
 			font->Printf(10, (SCREEN_HEIGHT / 2) - 0 * 40 - (-1 * pauseSelection) * 40 + motion, pauseSelection == 0, "resume");
 			font->Printf(10, (SCREEN_HEIGHT / 2) - 1 * 40 - (-1 * pauseSelection) * 40 + motion, pauseSelection == 1, "restart music");
-			font->Printf(10, (SCREEN_HEIGHT / 2) - 2 * 40 - (-1 * pauseSelection) * 40 + motion, pauseSelection == 2, "go to main menu");
+			font->Printf(10, (SCREEN_HEIGHT / 2) - 2 * 40 - (-1 * pauseSelection) * 40 + motion, pauseSelection == 2, "change difficulty");
+			font->Printf(10, (SCREEN_HEIGHT / 2) - 3 * 40 - (-1 * pauseSelection) * 40 + motion, pauseSelection == 3, "go to main menu");
 
+		}else if (state == inChangeDificulty) {
+			
+			renderScreen(PV);
+			
+			font->Printf(10 * 3.22, 184 * 3.22f, 1, "Not implemented yet.."); 
+
+			//go back
+			if (Pad::one_circle()) {
+				state = inPause;
+			}
 		}
 		else if (state == score) {
 
 			font->Printf(10 * 3.22, 184 * 3.22f, 1, "points = %i", points);
 			font->Printf(10 * 3.22, 166 * 3.22f, 1, "accuracy = %i percent", accuracy);
 			font->Printf(10 * 3.22, 148 * 3.22f, 1, "longest streak = %i", longestStreak);
-			font->Printf(10 * 3.22, 130 * 3.22f, 1, "press cross to quit");
+			font->Printf(10 * 3.22, 130 * 3.22f, 1, "press A to quit");
 
-			if (Pad::one_cross()) {
+			if (Pad::one_circle()) {
 				stop();
 			}
 		}

@@ -144,6 +144,9 @@ public:
 	static  bool one_cross() { 
 		return oneHit(SDLK_k) || oneHit(1);
 	}
+	static  bool one_circle() { 
+		return oneHit(SDLK_k) || oneHit(0);
+	}
 	static  bool one_triangle() {
 		return oneHit(SDLK_i) || oneHit(2);
 	}

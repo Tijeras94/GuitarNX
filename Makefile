@@ -45,8 +45,8 @@ INCLUDES	:=	include source
 #ROMFS	:=	romfs
 PROGRAM := GuitarNX
 ICON := Icon.jpg
-APP_AUTHOR := jatijerina2
-APP_VERSION := 1.0.0
+APP_AUTHOR := Tijeras94
+APP_VERSION := 0.0.1
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------

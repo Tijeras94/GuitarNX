@@ -28,6 +28,7 @@ enum GAME_STATES {
 	credits,
 	musicSelection,
 	difficultySelection,
+	gameLoading,
 	gaming,
 	error,
 	aide,
@@ -47,7 +48,6 @@ int main(int argc, char* argv[])
 
 
 	const char* skin = "data/skins/hero/";
-	const char* song = "data/songs/1/";
 
 	 
 	Shader _shader("data/shader/vert.txt", "data/shader/sha.txt");
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
 					lview.motionUp();
 				}
 			}
-			if (Pad::one_cross()) {
+			if (Pad::one_circle()) {
 				if (mainMenuSelection == 0) {
 					lview.resetMotionMenu();
 					state = musicSelection;
@@ -184,34 +184,34 @@ int main(int argc, char* argv[])
 		}
 		else if (state == credits) {
 
-			if (Pad::one_cross()) {
+			if (Pad::one_circle()) {
 				state = mainMenu;
 			}
 
 			arial.Printf(10 * 3.22, 30 * 3.22f, 1, "backgroud images by https://unsplash.com/@narrowedge");
-			arial.Printf(10 * 3.22, 70 * 3.22f, 1, "https://github.com/tijeras94");
+			arial.Printf(10 * 3.22, 70 * 3.22f, 1, "https://github.com/tijeras94/GuitarNX");
 			arial.Printf(10 * 3.22, 90 * 3.22f, 1,  "programed by Jaime Tijerina");
-			arial.Printf(10 * 3.22, 130 * 3.22f,1, "GuitarNX v1.0.0");
+			arial.Printf(10 * 3.22, 130 * 3.22f,1, "GuitarNX v0.0.1");
 
 
 		}
 		else if (state == configMenu) {
 			arial.Printf(10 * 3.22, 30 * 3.22f, 1, "Not Implemented :(");
 			//if (config::configMenu() == false) state = mainMenu;
-			if (Pad::one_cross()) {
+			if (Pad::one_circle()) {
 				state = mainMenu;
 			}
 
 		}
 		else if (state == aide) {
 
-			if (Pad::one_cross()) {
+			if (Pad::one_circle()) {
 				state = mainMenu;
 			}
-			arial.Printf(10 * 3.22f, 30 * 3.22f, 1,  "x : yellow + pink");
-			arial.Printf(10 * 3.22f, 50 * 3.22f, 1, "a : pink");
-			arial.Printf(10 * 3.22f, 70 * 3.22f, 1, "b : blue");
-			arial.Printf(10 * 3.22f, 90 * 3.22f, 1, "y : yellow");
+			arial.Printf(10 * 3.22f, 30 * 3.22f, 1,  "X : yellow + pink");
+			arial.Printf(10 * 3.22f, 50 * 3.22f, 1, "A : pink");
+			arial.Printf(10 * 3.22f, 70 * 3.22f, 1, "B : blue");
+			arial.Printf(10 * 3.22f, 90 * 3.22f, 1, "Y : yellow");
 			arial.Printf(10 * 3.22f, 110 * 3.22f, 1, "up: green + red");
 			arial.Printf(10 * 3.22f, 130 * 3.22f, 1, "down: red");
 			arial.Printf(10 * 3.22f, 150 * 3.22f, 1, "left: green");
@@ -240,7 +240,7 @@ int main(int argc, char* argv[])
 					//stopPreview();
 				}
 			}
-			if (Pad::one_cross()) {
+			if (Pad::one_circle()) {
 				if (fentry->list->at(fentry->selection)->type == MUSIC_ENTRY) {
 					MusicEntry* music = (MusicEntry*)fentry->list->at(fentry->selection);
 					sprintf(tmp, "%snotes.mid", music->dir);
@@ -290,7 +290,7 @@ int main(int argc, char* argv[])
 				}
 				//stopPreview();
 			}
-			if (Pad::one_triangle()) {
+			if (Pad::one_cross()) {
 				lview.resetMotionMenu();
 				if (musicListMenu.size() > 1) {
 					musicListMenu.pop_back();
@@ -326,26 +326,28 @@ int main(int argc, char* argv[])
 					difficulty = nextD;
 				}
 			}
-			if (Pad::one_triangle()) {
+			if (Pad::one_cross()) {
 				state = musicSelection;
 				//onEntrySince = clock();
 				lview.resetMotionMenu();
 			}
-			if (Pad::one_cross()) {
-
-				p = new Player(skin, &renderer, &_shader, &_shaderColor, &arial);
-
-				FolderEntry* fentry = musicListMenu.back();
-				MusicEntry* music = (MusicEntry*)fentry->list->at(fentry->selection);
-				p->loadMusic(music->dir, difficulty);
-
-				p->reset();
-				state = gaming;
-
-				arial.Printf(10 * 3.22, 30 * 3.22f, 1, "Staring Game....");
+			if (Pad::one_circle()) {
+				auto text = "Loading Song....";
+				arial.Printf(SCREEN_WIDTH - arial.mesureText(text)- 5, 30 * 3.22f, 1, text);
+				state = gameLoading;
+			}else{
+				lview.printMenu(difficultyMenuTxt, difficulty);// only print when game not started
 			}
 
-			lview.printMenu(difficultyMenuTxt, difficulty);
+		} else if (state == gameLoading){
+			p = new Player(skin, &renderer, &_shader, &_shaderColor, &arial);
+
+			FolderEntry* fentry = musicListMenu.back();
+			MusicEntry* music = (MusicEntry*)fentry->list->at(fentry->selection);
+			p->loadMusic(music->dir, difficulty);
+
+			p->reset();
+			state = gaming;
 		}
 		else if (state == gaming) {
 			state = gaming;
@@ -360,7 +362,7 @@ int main(int argc, char* argv[])
 		}
 		else if (state == error) {
 			arial.Printf(10 * 3.22, 30 * 3.22f, 1, "On Error State....");
-			if (Pad::one_cross()) {
+			if (Pad::one_circle()) {
 			}
 		}
 
