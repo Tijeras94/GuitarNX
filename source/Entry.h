@@ -46,8 +46,8 @@ void iniInfo(char* filename, char* name, char* artist) {
 			temp[i] = c;
 			i++;
 		}
-
-		if (temp[0] == 'n' &&
+		 
+		if ((temp[0] == 'n' || temp[0] == 'N') &&
 			temp[1] == 'a' &&
 			temp[2] == 'm' &&
 			temp[3] == 'e' &&
@@ -58,7 +58,7 @@ void iniInfo(char* filename, char* name, char* artist) {
 			name[n] = c;
 			n++;
 		}
-		if (temp[0] == 'a' &&
+		if ((temp[0] == 'a' || temp[0] == 'A') &&
 			temp[1] == 'r' &&
 			temp[2] == 't' &&
 			temp[3] == 'i' &&
