@@ -228,6 +228,10 @@ public:
 
 	Font* font;
 
+	bool stopChangeDificulty;
+	MusicEntry* loadedMusic;
+	char dificutyText[15];
+
 	void erreur() {
 		//pspAudioSetVolume(2, 0, 0);
 		audio2::setVolume(0);
@@ -318,8 +322,8 @@ public:
 			auto model = glm::identity<glm::mat4>();
 			model = glm::translate(model, glm::vec3(((float)((int)i - 2)) / 2.0f, 0, 0.0f));
 			//	model = glm::rotate(model, glm::radians(-180.0f / 2), glm::vec3(0, 0, 1));
-			if (!touches[i]) { //  rendering if the key is not pressed
-
+			if (!touches[i]) { //  rendering if the key is not pressed 
+				button.setTexture(buttonTexts.at(5));
 			}
 			else { //  if it is pressed
 
@@ -331,9 +335,9 @@ public:
 
 				}
 
+				button.setTexture(buttonTexts.at(i));
 			}
 			texShader->setMat4("pmv", PV * model);
-			button.setTexture(buttonTexts.at(i));
 			renderer->render(button);
 		}
 	}
@@ -497,7 +501,7 @@ public:
 	}
 
 	void ShowScore() {
-		font->Printf(10, SCREEN_HEIGHT - font->getFontHeight(), true, "points = %i", showedPoints);
+		font->Printf(10, SCREEN_HEIGHT - font->getFontHeight(), true, "%i", showedPoints);
 		font->Printf(SCREEN_WIDTH - font->getFontHeight()*2, SCREEN_HEIGHT - font->getFontHeight(), true, "X%i", mult);
 
 
@@ -507,8 +511,19 @@ public:
 	}
 
 
-	void loadMusic(const char* path, int difficulty) {
+	void loadMusic(MusicEntry* music, std::vector<char*> & listdif , int difficulty) {
 
+		memset(dificutyText, 15, 10);
+		sprintf(dificutyText, "%s", listdif[difficulty]);
+
+		loadedMusic = music;
+		stopChangeDificulty = false;
+		audio1::OGG_End();
+		audio2::OGG_End();
+		audio3::OGG_End();
+		audio4::OGG_End();
+
+		const char* path = music->dir;
 		//Chargement des ressources
 		sprintf(songPath, "%s%s", path, "song.ogg");
 
@@ -643,6 +658,7 @@ public:
 
 	void update(glm::mat4 PV)
 	{
+		stopChangeDificulty = false;
 		// boucle
 		timer.Update();
 		timeNow = timer.Ticks();//clock();
@@ -844,13 +860,21 @@ public:
 			motion = (int)(motion * TEXT_MOTION_VELOCITY);
 
 			renderScreen(PV);
+
+			font->Printf(10, SCREEN_HEIGHT - font->getFontHeight(), true, "%s by %s (%s)", loadedMusic->name, loadedMusic->artist, dificutyText);
+			
+			
+
 			font->Printf(10, (SCREEN_HEIGHT / 2) - 0 * 40 - (-1 * pauseSelection) * 40 + motion, pauseSelection == 0, "resume");
-			font->Printf(10, (SCREEN_HEIGHT / 2) - 1 * 40 - (-1 * pauseSelection) * 40 + motion, pauseSelection == 1, "restart music");
+			font->Printf(10, (720 / 2) - 1 * 40 - (-1 * pauseSelection) * 40 + motion, pauseSelection == 1, "restart music");
 			font->Printf(10, (SCREEN_HEIGHT / 2) - 2 * 40 - (-1 * pauseSelection) * 40 + motion, pauseSelection == 2, "change difficulty");
 			font->Printf(10, (SCREEN_HEIGHT / 2) - 3 * 40 - (-1 * pauseSelection) * 40 + motion, pauseSelection == 3, "go to main menu");
 
 		}else if (state == inChangeDificulty) {
-			
+			stop();
+			stopChangeDificulty = true;
+
+			/*
 			renderScreen(PV);
 			
 			font->Printf(10 * 3.22, 184 * 3.22f, 1, "Not implemented yet.."); 
@@ -859,13 +883,15 @@ public:
 			if (Pad::one_circle()) {
 				state = inPause;
 			}
+			*/
 		}
 		else if (state == score) {
 
-			font->Printf(10 * 3.22, 184 * 3.22f, 1, "points = %i", points);
-			font->Printf(10 * 3.22, 166 * 3.22f, 1, "accuracy = %i percent", accuracy);
-			font->Printf(10 * 3.22, 148 * 3.22f, 1, "longest streak = %i", longestStreak);
-			font->Printf(10 * 3.22, 130 * 3.22f, 1, "press A to quit");
+			font->Printf(10 * 3.22, SCREEN_HEIGHT - font->getFontHeight(), 1, "%s by %s (%s)", loadedMusic->name, loadedMusic->artist, dificutyText);
+			font->Printf(10 * 3.22, 166 * 3.22f, 1, "points = %i", points);
+			font->Printf(10 * 3.22, 148 * 3.22f, 1, "accuracy = %i percent", accuracy);
+			font->Printf(10 * 3.22, 130 * 3.22f, 1, "longest streak = %i", longestStreak);
+			font->Printf(10 * 3.22, 112 * 3.22f, 1, "press A to quit"); 
 
 			if (Pad::one_circle()) {
 				stop();

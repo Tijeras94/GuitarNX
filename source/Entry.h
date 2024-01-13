@@ -81,11 +81,11 @@ void iniInfo(char* filename, char* name, char* artist) {
 
 bool isMusicDir(char* dirname) {
 	DIR* dfd = opendir(dirname);
-	if (dfd > 0)
+	if (dfd != NULL)
 	{
 		dirent* dir;
 
-		while ((dir = readdir(dfd)) > 0)
+		while ((dir = readdir(dfd)) != NULL)
 		{ 
 			if (dir->d_type & DT_REG)
 			{
@@ -113,11 +113,11 @@ void loadFileList(std::vector<MenuEntry*>* musicList, char* folder) {
 	char tmp[512];
 	DIR* dfd;
 	dfd = opendir(folder);
-	if (dfd > 0)
+	if (dfd != NULL)
 	{
 		dirent* dir;
 
-		while ((dir = readdir(dfd)) > 0)
+		while ((dir = readdir(dfd)) != NULL)
 		{
 			if (dir->d_type & DT_DIR)
 			{

@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
 			arial.Printf(10 * 3.22, 30 * 3.22f, 1, "backgroud images by https://unsplash.com/@narrowedge");
 			arial.Printf(10 * 3.22, 70 * 3.22f, 1, "https://github.com/tijeras94/GuitarNX");
 			arial.Printf(10 * 3.22, 90 * 3.22f, 1,  "programed by Jaime Tijerina");
-			arial.Printf(10 * 3.22, 130 * 3.22f,1, "GuitarNX v0.0.1");
+			arial.Printf(10 * 3.22, 130 * 3.22f,1, "GuitarNX v0.0.2");
 
 
 		}
@@ -351,7 +351,7 @@ int main(int argc, char* argv[])
 
 			FolderEntry* fentry = musicListMenu.back();
 			MusicEntry* music = (MusicEntry*)fentry->list->at(fentry->selection);
-			p->loadMusic(music->dir, difficulty);
+			p->loadMusic(music, difficultyMenuTxt, difficulty);
 
 			p->reset();
 			state = gaming;
@@ -362,9 +362,13 @@ int main(int argc, char* argv[])
 			p->update(cam.getPV());
 
 			if (!p->running()) {
+				if (!p->stopChangeDificulty)
+					state = mainMenu;
+				else
+					state = difficultySelection;
+
 				delete p;
 				p = 0;
-				state = mainMenu;
 			}
 		}
 		else if (state == error) {

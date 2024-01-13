@@ -46,7 +46,7 @@ INCLUDES	:=	include source
 PROGRAM := GuitarNX
 ICON := Icon.jpg
 APP_AUTHOR := Tijeras94
-APP_VERSION := 0.0.1
+APP_VERSION := 0.0.2
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
